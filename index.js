@@ -90,6 +90,17 @@ client.connect().then((connection) => {
         resp.render('update-student',{result})
     })
 
+    app.get("/student/:id",async (req, resp) => {
+        const id = req.params.id;
+        console.log(id);
+        const collection =db.collection("students")
+        const result = await collection.findOne({_id: new ObjectId(req.params.id)})
+        resp.send({message: 'data fetched',
+            success:true,
+            result:result
+        })
+    })
+
 })
 
 
