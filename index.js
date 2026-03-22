@@ -82,6 +82,14 @@ client.connect().then((connection) => {
         }
     })
 
+    app.get("/ui/student/:id",async (req, resp) => {
+        const id = req.params.id;
+        console.log(id);
+        const collection =db.collection("students")
+        const result = await collection.findOne({_id: new ObjectId(req.params.id)})
+        resp.render('update-student',{result})
+    })
+
 })
 
 
