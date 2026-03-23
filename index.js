@@ -54,55 +54,93 @@ client.connect().then((connection) => {
         resp.send({ message: "data stored", success: true, result: result })
     })
 
-    app.delete("/delete/:id",async (req, resp) => {
+    app.delete("/delete/:id", async (req, resp) => {
         console.log(req.params.id);
-        const collection =db.collection("students")
-        const result = await collection.deleteOne({_id: new ObjectId(req.params.id)})
-        if(result){
+        const collection = db.collection("students")
+        const result = await collection.deleteOne({ _id: new ObjectId(req.params.id) })
+        if (result) {
             resp.send({
-                massage:"student data deleted",
-                success:true
+                massage: "student data deleted",
+                success: true
             })
-        }else{
+        } else {
             resp.send({
-                massage:"student data not deleted, try after sometime",
-                success:false
+                massage: "student data not deleted, try after sometime",
+                success: false
             })
         }
     })
 
-    app.get("/ui/delete/:id",async (req, resp) => {
+    app.get("/ui/delete/:id", async (req, resp) => {
         console.log(req.params.id);
-        const collection =db.collection("students")
-        const result = await collection.deleteOne({_id: new ObjectId(req.params.id)})
-        if(result){
+        const collection = db.collection("students")
+        const result = await collection.deleteOne({ _id: new ObjectId(req.params.id) })
+        if (result) {
             resp.send("<h1>student record deleted</>")
-        }else{
+        } else {
             resp.send("<h1>student record not deleted</>")
         }
     })
 
-    app.get("/ui/student/:id",async (req, resp) => {
+    app.get("/ui/student/:id", async (req, resp) => {
         const id = req.params.id;
         console.log(id);
-        const collection =db.collection("students")
-        const result = await collection.findOne({_id: new ObjectId(req.params.id)})
-        resp.render('update-student',{result})
+        const collection = db.collection("students")
+        const result = await collection.findOne({ _id: new ObjectId(req.params.id) })
+        resp.render('update-student', { result })
     })
 
-    app.get("/student/:id",async (req, resp) => {
+    app.get("/student/:id", async (req, resp) => {
         const id = req.params.id;
         console.log(id);
-        const collection =db.collection("students")
-        const result = await collection.findOne({_id: new ObjectId(req.params.id)})
-        resp.send({message: 'data fetched',
-            success:true,
-            result:result
+        const collection = db.collection("students")
+        const result = await collection.findOne({ _id: new ObjectId(req.params.id) })
+        resp.send({
+            message: 'data fetched',
+            success: true,
+            result: result
         })
     })
 
+    app.post("/ui/update/:id", (req, resp) => {
+        console.log(req.body)
+        console.log(req.params.id)
+
+        const collection = db.collection("students")
+        const filter = { _id: new ObjectId(req.params.id) }
+        const update = { $set: req.body }
+        const result = collection.updateOne(filter, update)
+
+        if (result) {
+            resp.send("data updated")
+        } else {
+            resp.send("data not updated")
+        }
+    })
+
+     app.put("/update/:id", (req, resp) => {
+        console.log(req.body)
+        console.log(req.params.id)
+
+        const collection = db.collection("students")
+        const filter = { _id: new ObjectId(req.params.id) }
+        const update = { $set: req.body }
+        const result = collection.updateOne(filter, update)
+
+        if (result) {
+            resp.send({
+                message: 'data updated',
+                success: true,
+                result: req.body
+            })
+        } else {
+            resp.send({
+                message: 'data not updated',
+                success: false,
+                result: null
+            })
+        }
+    })
+
 })
-
-
-
 app.listen(3200);
