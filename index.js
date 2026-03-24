@@ -1,146 +1,80 @@
-import express from "express";
-import { MongoClient, ObjectId } from "mongodb";
-
-const dbName = "school";
-const url = "mongodb://localhost:27017"
-
-const client = new MongoClient(url)
-
+import mongoose from 'mongoose';
+import express from 'express'
+import studentModel from './model/studentModel.js';
 
 const app = express();
-app.use(express.urlencoded({ extended: true }))
+
 app.use(express.json());
-
-app.set("view engine", 'ejs')
-
-client.connect().then((connection) => {
-    const db = connection.db(dbName)
-
-    app.get("/api", async (req, resp) => {
-        const collection = db.collection('students')
-        const students = await collection.find().toArray();
-        resp.send(students)
-    })
-
-    app.get("/ui", async (req, resp) => {
-        const collection = db.collection('students')
-        const students = await collection.find().toArray();
-        resp.render("students", { students })
-    })
-
-
-    app.get("/add", (req, resp) => {
-        resp.render("add-student")
-    })
-
-    app.post("/add-student", async (req, resp) => {
-        // console.log(req.body);
-        const collection = db.collection('students')
-        const result = await collection.insertOne(req.body)
-        console.log(result);
-        // const students = await collection.find().toArray();
-        resp.send("data saved")
-    })
-
-    app.post("/add-student-api", async (req, resp) => {
-        console.log(req.body)
-        const { name, age, email } = req.body;
-        if (!name || !age || !email) {
-            resp.send({ massage: "operation failed", success: false })
-            return false
-        }
-        const collection = db.collection('students')
-        const result = await collection.insertOne(req.body)
-        resp.send({ message: "data stored", success: true, result: result })
-    })
-
-    app.delete("/delete/:id", async (req, resp) => {
-        console.log(req.params.id);
-        const collection = db.collection("students")
-        const result = await collection.deleteOne({ _id: new ObjectId(req.params.id) })
-        if (result) {
-            resp.send({
-                massage: "student data deleted",
-                success: true
-            })
-        } else {
-            resp.send({
-                massage: "student data not deleted, try after sometime",
-                success: false
-            })
-        }
-    })
-
-    app.get("/ui/delete/:id", async (req, resp) => {
-        console.log(req.params.id);
-        const collection = db.collection("students")
-        const result = await collection.deleteOne({ _id: new ObjectId(req.params.id) })
-        if (result) {
-            resp.send("<h1>student record deleted</>")
-        } else {
-            resp.send("<h1>student record not deleted</>")
-        }
-    })
-
-    app.get("/ui/student/:id", async (req, resp) => {
-        const id = req.params.id;
-        console.log(id);
-        const collection = db.collection("students")
-        const result = await collection.findOne({ _id: new ObjectId(req.params.id) })
-        resp.render('update-student', { result })
-    })
-
-    app.get("/student/:id", async (req, resp) => {
-        const id = req.params.id;
-        console.log(id);
-        const collection = db.collection("students")
-        const result = await collection.findOne({ _id: new ObjectId(req.params.id) })
-        resp.send({
-            message: 'data fetched',
-            success: true,
-            result: result
-        })
-    })
-
-    app.post("/ui/update/:id", (req, resp) => {
-        console.log(req.body)
-        console.log(req.params.id)
-
-        const collection = db.collection("students")
-        const filter = { _id: new ObjectId(req.params.id) }
-        const update = { $set: req.body }
-        const result = collection.updateOne(filter, update)
-
-        if (result) {
-            resp.send("data updated")
-        } else {
-            resp.send("data not updated")
-        }
-    })
-
-     app.put("/update/:id", (req, resp) => {
-        console.log(req.body)
-        console.log(req.params.id)
-
-        const collection = db.collection("students")
-        const filter = { _id: new ObjectId(req.params.id) }
-        const update = { $set: req.body }
-        const result = collection.updateOne(filter, update)
-
-        if (result) {
-            resp.send({
-                message: 'data updated',
-                success: true,
-                result: req.body
-            })
-        } else {
-            resp.send({
-                message: 'data not updated',
-                success: false,
-                result: null
-            })
-        }
-    })
-
+await mongoose.connect("mongodb://localhost:27017/school").then(() => {
+    // console.log("____connected____")
 })
-app.listen(3200);
+
+
+app.get("/", async (req, resp) => {
+
+    const studentData = await studentModel.find()
+    resp.send(studentData)
+})
+
+app.post("/save", async (req, resp) => {
+    console.log(req.body);
+    const { name, age, email } = req.body;
+    if (!name || !age || !email) {
+        resp.send({
+            message: "data not stored",
+            success: false,
+            storedInfo: null
+        })
+    }
+
+    const studentData = await studentModel.create(req.body)
+
+    resp.send({
+        message: "data stored",
+        success: true,
+        storedInfo: studentData
+    })
+})
+
+app.put("/update/:id",async(req,resp)=>{
+    console.log(req.body);
+    const id = req.params.id;
+    const studentData = await studentModel.findByIdAndUpdate(id,{
+        ...req.body
+    })
+    resp.send({
+        massage:"data updated",
+        success:true,
+        info:studentData
+    })
+})
+
+app.delete("/delete/:id",async(req,resp)=>{
+    const id = req.params.id;
+    const studentData = await studentModel.findByIdAndDelete(id,{
+        ...req.body
+    })
+    resp.send({
+        massage:"data deleted",
+        success:true,
+        info:studentData
+    })
+})
+
+app.listen(3200)
+
+// async function dbConnection() {
+//     await mongoose.connect("mongodb://localhost:27017/school");
+//     const schema = mongoose.Schema({
+//         name: String,
+//         email: String,
+//         age: Number
+//     })
+
+//     const studentsModel = mongoose.model('students',schema);
+//     const result = await studentsModel.find();
+//     console.log(result);
+
+// }
+
+// dbConnection();

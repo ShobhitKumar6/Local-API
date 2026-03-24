@@ -1,1 +1,5 @@
 /node_modules
+views/update-student.ejs
+views/students.ejs
+views/add-student.ejs
+users.json
