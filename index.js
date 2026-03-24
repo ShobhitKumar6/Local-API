@@ -1,30 +1,30 @@
-import express from 'express';
-import multer from 'multer';
+ import express from 'express';
 
-const app = express();
-const storage = multer.diskStorage({
-     destination: function (req, file, cd) {
-        cd(null, 'upload')
-    },
-    filename: function (req, file, cd) {
-        cd(null, file.originalname)
-    },
-})
-const upload = multer( {storage})
-app.get("/", (req, resp) => {
-    resp.send(`
-            <from action='/upload' method="post" enctype="multipart/from-data">
-            <input type="file" name="myfile" />
-            <button>Upload file</button>
-            </form>
-            `)
-})
+ const app = express();
 
-app.post("/upload", upload.single('myfile'), (req, resp) => {
-    resp.send({
-        massage: 'file uploaded',
-        info: null
-    })
-})
 
-app.listen(5000);
+ app.set("view engine",'ejs')
+app.use(express.urlencoded({extended:true}))
+
+ app.get("/login",(req,resp)=>{
+    resp.render("login")
+ })
+
+ app.post("/profile",(req,resp)=>{
+    resp.setHeader('set-cookie',"login=true")
+    resp.setHeader('set-cookie',"name="+req.body.name)
+    resp.render("profile")
+ })
+
+ app.get("/",(req,resp)=>{
+    let cookiesData = req.get('cookie');
+
+    cookiesData = cookiesData.split(";")
+    cookiesData = cookiesData[2].split("=");
+
+    console.log(cookiesData[1])
+
+    resp.render('home',{name:cookiesData[1]})
+ })
+
+ app.listen(3200);
