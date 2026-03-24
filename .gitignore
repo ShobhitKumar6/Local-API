@@ -1,3 +1,4 @@
 /node_modules
-model/studentModel.js
-schema/studentSchema.js
+views/profile.ejs
+views/login.ejs
+views/home.ejs

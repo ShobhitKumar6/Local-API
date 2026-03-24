@@ -1,30 +1,42 @@
- import express from 'express';
 
- const app = express();
+import express, { text } from 'express';
+import nodemailer from 'nodemailer';
 
+const app = express();
 
- app.set("view engine",'ejs')
-app.use(express.urlencoded({extended:true}))
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'riyanshpatel894@gmail.com',
+        pass: 'your app password'
+    }
+});
 
- app.get("/login",(req,resp)=>{
-    resp.render("login")
- })
+// app.use(express.urlencoded({extended:false}))
+app.use(express.json())
+app.set('view engine', 'ejs')
 
- app.post("/profile",(req,resp)=>{
-    resp.setHeader('set-cookie',"login=true")
-    resp.setHeader('set-cookie',"name="+req.body.name)
-    resp.render("profile")
- })
+app.get("/mail", (req, resp) => {
+    resp.render("mail")
+})
 
- app.get("/",(req,resp)=>{
-    let cookiesData = req.get('cookie');
+app.post("/submit-email", (req, resp) => {
+    console.log(req.body)
 
-    cookiesData = cookiesData.split(";")
-    cookiesData = cookiesData[2].split("=");
+    const mailOption = {
+        from: 'riyanshpatel894@gmail.com',
+        to:'riyanshpatel894@gmail.com',
+        subject:req.body.subject,
+        text:req.body.mail
+    }
+    transporter.sendMail(mailOption,(error,info)=>{
+        if(error){
+            resp.send("email operation filed, try again")
+        }else{
+            resp.send("mail send")
+        }
+    })
+    resp.send("email send")
+})
 
-    console.log(cookiesData[1])
-
-    resp.render('home',{name:cookiesData[1]})
- })
-
- app.listen(3200);
+app.listen(3200);
